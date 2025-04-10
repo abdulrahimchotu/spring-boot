@@ -13,8 +13,6 @@ DB_USERNAME=your-username
 DB_PASSWORD=your-password
 ```
 
-The application uses environment variables for configuration. All sensitive information and environment-specific settings are stored in the `.env` file, which is not committed to version control.
-
 ## Running the Application
 
 1. Clone the repository
