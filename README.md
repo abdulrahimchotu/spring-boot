@@ -2,15 +2,18 @@
 
 A Spring Boot application for managing transport bookings across different modes of transportation (Bus, Train, Airplane).
 
-## Database Setup
+## Environment Setup
 
 1. Create a PostgreSQL database
-2. Update `src/main/resources/application.properties` with your database credentials:
+2. Copy `.env.example` to `.env` and update with your configuration:
 ```properties
-spring.datasource.url=jdbc:postgresql://your-host:5432/your-database
-spring.datasource.username=your-username
-spring.datasource.password=your-password
+# Database Configuration
+DB_URL=jdbc:postgresql://your-host:5432/your-database
+DB_USERNAME=your-username
+DB_PASSWORD=your-password
 ```
+
+The application uses environment variables for configuration. All sensitive information and environment-specific settings are stored in the `.env` file, which is not committed to version control.
 
 ## Running the Application
 
@@ -139,3 +142,17 @@ spring.datasource.password=your-password
 ```bash
 ./mvnw test
 ```
+
+## GitHub Deployment
+
+When deploying to GitHub, make sure to:
+
+1. **Never commit sensitive information**: The `.env` file is already in `.gitignore` to prevent accidental commits of sensitive data.
+
+2. **Set up environment variables in your CI/CD pipeline**: If you're using GitHub Actions or any other CI/CD tool, configure the environment variables there.
+
+3. **Use GitHub Secrets**: For sensitive information like database credentials, use GitHub Secrets to store them securely.
+
+4. **Provide clear setup instructions**: Make sure your README includes clear instructions for setting up the environment variables, as shown in the Environment Setup section.
+
+5. **Include the `.env.example` file**: This file is committed to the repository and serves as a template for users to create their own `.env` file.

@@ -1,10 +1,19 @@
-HELP.md
+### Maven ###
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
 
-### STS ###
+### STS/Eclipse ###
 .apt_generated
 .classpath
 .factorypath
@@ -12,12 +21,14 @@ target/
 .settings
 .springBeans
 .sts4-cache
+bin/
 
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
+out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -31,22 +42,37 @@ build/
 
 ### VS Code ###
 .vscode/
+*.code-workspace
 
 ### Application Properties ###
 src/main/resources/application-dev.properties
 src/main/resources/application-prod.properties
+src/main/resources/application-local.properties
 
 ### Logs ###
 *.log
 logs/
+*.gz
 
 ### OS specific ###
 .DS_Store
+.DS_Store?
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
 
 ### Environment Variables ###
 .env
 .env.local
+.env.development
+.env.test
+.env.production
 .env.*.local
 !.env.example
 
@@ -59,6 +85,36 @@ Thumbs.db
 *.tar.gz
 *.rar
 
-### Maven ###
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
+### Compiled class files ###
+*.class
+
+### BlueJ files ###
+*.ctxt
+
+### Mobile Tools for Java (J2ME) ###
+.mtj.tmp/
+
+### Gradle ###
+.gradle
+**/build/
+!src/**/build/
+gradlew
+gradlew.bat
+gradle/wrapper/gradle-wrapper.jar
+
+### Node ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### Temporary files ###
+*~
+*.bak
+*.swp
+*.tmp
+temp/
+tmp/
+
+### HELP.md - Spring Boot specific ###
+HELP.md
