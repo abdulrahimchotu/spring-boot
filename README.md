@@ -137,8 +137,4 @@ DB_PASSWORD=your-password
 ./mvnw clean install
 ```
 
-### Test
-```bash
-./mvnw test
-```
 
