@@ -2,6 +2,23 @@
 
 A Spring Boot application for managing transport bookings across different modes of transportation (Bus, Train, Airplane).
 
+## Authentication
+
+The application uses JWT (JSON Web Token) for authentication. All protected endpoints require a valid JWT token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+### Admin Credentials
+Use these credentials to access admin features:
+```json
+{
+  "username": "admin",
+  "email": "admin@",
+  "password": "admin123"
+}
+```
+
 ## Environment Setup
 
 1. Create a PostgreSQL database
@@ -11,6 +28,10 @@ A Spring Boot application for managing transport bookings across different modes
 DB_URL=jdbc:postgresql://your-host:5432/your-database
 DB_USERNAME=your-username
 DB_PASSWORD=your-password
+
+# JWT Configuration
+JWT_SECRET=generate_a_secure_key_using_openssl_rand_-base64_32
+JWT_EXPIRATION=3600000
 ```
 3. Ensure PostgreSQL is running
 
@@ -47,30 +68,10 @@ DB_PASSWORD=your-password
 - `status`: Enum (BOOKED, CANCELLED)
 - `seatCount`: Integer
 
-## DTOs
-
-### UserDto
-```json
-{
-    "username": "string (3-50 chars)",
-    "password": "string (min 6 chars)",
-    "email": "valid email"
-}
-```
-
-### BookingDto
-```json
-{
-    "userId": "integer",
-    "journeyId": "integer",
-    "seatCount": "integer (min 1)"
-}
-```
-
 ## API Endpoints
 
-### User Routes
-- Register: `POST /register`
+### Authentication Routes
+- Register: `POST /auth/register`
   ```json
   {
     "username": "john_doe",
@@ -78,18 +79,25 @@ DB_PASSWORD=your-password
     "email": "john@example.com"
   }
   ```
-- Login: `POST /login`
+- Login: `POST /auth/login`
   ```json
   {
     "username": "john_doe",
-    "password": "password123",
-    "email": "john@example.com"
+    "password": "password123"
+  }
+  ```
+  Response:
+  ```json
+  {
+    "token": "your.jwt.token",
+    "username": "john_doe",
+    "isAdmin": false
   }
   ```
 
-### Journey Routes
+### Journey Routes (Protected)
 - Get All Journeys: `GET /journey/all`
-- Add Journey: `POST /journey/add`
+- Add Journey (Admin only): `POST /journey/add`
   ```json
   {
     "source": "City A",
@@ -102,7 +110,7 @@ DB_PASSWORD=your-password
   ```
 - Get by Type: `GET /journey/{type}` (type: BUS, TRAIN, AIRPLANE)
 
-### Booking Routes
+### Booking Routes (Protected)
 - Get All Bookings: `GET /booking/`
 - Book Journey: `POST /booking/book`
   ```json
@@ -124,6 +132,7 @@ DB_PASSWORD=your-password
     "path": "/api/endpoint"
 }
 ```
+
 
 ## Development
 

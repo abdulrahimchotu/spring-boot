@@ -1,16 +1,20 @@
 package com.transport.booking.controllers;
 
-import com.transport.booking.exceptions.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-import java.util.List;
-import com.transport.booking.entities.Booking;
 import com.transport.booking.dto.BookingDto;
+import com.transport.booking.entities.Booking;
+import com.transport.booking.exceptions.BadRequestException;
+import com.transport.booking.exceptions.ResourceNotFoundException;
 import com.transport.booking.services.BookingService;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
-@RequestMapping("/booking")
+@RequestMapping("/api/bookings")
 public class BookingController {
     private final BookingService bookingService;
     
@@ -19,17 +23,20 @@ public class BookingController {
     }
 
     @GetMapping("/")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<Booking> getBookings() {
         return bookingService.getBookings();
     }
 
     @PostMapping("/book")
-    public ResponseEntity<String> bookJourney( @RequestBody BookingDto bookingDto) {
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<String> bookJourney(@RequestBody BookingDto bookingDto) {
         bookingService.bookJourney(bookingDto);
         return ResponseEntity.ok("Journey booked successfully");
     }
 
     @PutMapping("/cancel/{bookingId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> cancelBooking(@PathVariable Integer bookingId) {
         try {
             bookingService.cancelBooking(bookingId);

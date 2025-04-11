@@ -1,15 +1,13 @@
 package com.transport.booking.controllers;
 
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.transport.booking.dto.UserDto;
+import com.transport.booking.dto.LoginResponseDto;
 import com.transport.booking.services.UserService;
-
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/auth")
 public class UserController {
     
     private final UserService userService;
@@ -17,28 +15,16 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
-    @GetMapping("/")
-    public String getMethodName() {
-        return "Hello World";
-    }
-    
+
     @PostMapping("/register")
-    public String addUser(@RequestBody UserDto entity) {
-        userService.addUser(entity);
-        return "entity added";
+    public ResponseEntity<String> register(@RequestBody UserDto userDto) {
+        userService.register(userDto);
+        return ResponseEntity.ok("Registration successful");
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody UserDto userDto) {
-        try {
-            userService.login(userDto);
-            return "Login successful";
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
-        }
+    public ResponseEntity<LoginResponseDto> login(@RequestBody UserDto userDto) {
+        LoginResponseDto response = userService.login(userDto);
+        return ResponseEntity.ok(response);
     }
-    
-    
-    
-    
 }
