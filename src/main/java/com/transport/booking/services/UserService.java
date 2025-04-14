@@ -1,12 +1,15 @@
 package com.transport.booking.services;
 
 import com.transport.booking.dto.UserDto;
+import com.transport.booking.dto.UserLoginDto;
 import com.transport.booking.dto.LoginResponseDto;
 import com.transport.booking.entities.User;
 import com.transport.booking.exceptions.AuthenticationException;
 import com.transport.booking.exceptions.BadRequestException;
 import com.transport.booking.repositories.UserRepository;
 import com.transport.booking.util.JwtUtil;
+
+
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,28 +32,29 @@ public class UserService {
 
         User user = new User();
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword()); // Store password as-is
+        user.setPassword(userDto.getPassword());
         user.setEmail(userDto.getEmail());
-        user.setIsAdmin(false);
+        user.setRole(User.UserRole.valueOf(userDto.getRole().toUpperCase()));
         
         userRepository.save(user);
     }
 
-    public LoginResponseDto login(UserDto userDto) {
+    public LoginResponseDto login(UserLoginDto userDto) {
         User user = userRepository.findByUsername(userDto.getUsername())
             .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
 
-        // Direct string comparison of passwords
         if (!userDto.getPassword().equals(user.getPassword())) {
             throw new AuthenticationException("Invalid username or password");
         }
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("isAdmin", user.getIsAdmin());
+        claims.put("ROLE", user.getRole().toString());
+        claims.put("Userid", user.getId());
+    
 
         String token = jwtUtil.generateToken(claims, user.getUsername());
 
-        return new LoginResponseDto(token, user.getUsername(), user.getIsAdmin());
+        return new LoginResponseDto(token, user.getUsername(), user.getRole().toString());
     }
 }
     

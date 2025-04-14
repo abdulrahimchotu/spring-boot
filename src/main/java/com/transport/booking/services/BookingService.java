@@ -5,15 +5,19 @@ import com.transport.booking.exceptions.BadRequestException;
 import com.transport.booking.exceptions.ResourceNotFoundException;
 
 import com.transport.booking.dto.BookingDto;
+import com.transport.booking.dto.BookingResponseDto;
 import com.transport.booking.entities.Booking;
 import com.transport.booking.repositories.UserRepository;
 import com.transport.booking.repositories.JourneyRepository;
 import com.transport.booking.entities.User;
 import com.transport.booking.entities.Journey;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -29,45 +33,44 @@ public class BookingService {
         this.journeyRepository = journeyRepository;
     }
 
-    public List<Booking> getBookings() {
-        return bookingRepository.findAll();
-    }
+    public List<BookingResponseDto> getBookings() {
+        List<Booking> bookings = bookingRepository.findAll();
 
-    @Transactional
-    public void cancelBooking(Integer bookingId) {
-        if (bookingId == null) {
-            throw new BadRequestException("Booking ID cannot be null");
+        if (bookings.isEmpty()) {
+            throw new ResourceNotFoundException("No bookings found.");
         }
 
-        Booking booking = bookingRepository.findById(bookingId)
-            .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
-
-        // Check if booking is already cancelled
-        if (booking.getStatus() == Booking.Status.CANCELLED) {
-            throw new BadRequestException("Booking is already cancelled");
-        }
-
-        try {
-            // Update journey available seats
+        return bookings.stream().map(booking -> {
             Journey journey = booking.getJourney();
-            journey.setAvailableSeats(journey.getAvailableSeats() + booking.getSeatCount());
-            journeyRepository.save(journey);
+            User passenger = booking.getUser();
+            User driver = journey.getUser();
 
-            // Update booking status
-            booking.setStatus(Booking.Status.CANCELLED);
-            bookingRepository.save(booking);
-        } catch (Exception e) {
-            throw new BadRequestException("Failed to cancel booking: " + e.getMessage());
+            return new BookingResponseDto(
+                booking.getId(),
+                passenger.getUsername(),
+                driver.getUsername(),
+                journey.getSource(),
+                journey.getDestination(),
+                journey.getDate(),
+                journey.getType(),
+                booking.getSeatCount(),
+                booking.getBookingTime(),
+                booking.getStatus()
+                );
+            }).collect(Collectors.toList());
         }
-    }
+
 
     public void bookJourney(BookingDto bookingDto) {
         if (bookingDto.getSeatCount() <= 0) {
             throw new BadRequestException("Seat count must be greater than 0");
         }
 
-        User user = userRepository.findById(bookingDto.getUserId())
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + bookingDto.getUserId()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = (Integer) authentication.getDetails();
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         Journey journey = journeyRepository.findById(bookingDto.getJourneyId())
             .orElseThrow(() -> new ResourceNotFoundException("Journey not found with id: " + bookingDto.getJourneyId()));
@@ -89,4 +92,5 @@ public class BookingService {
 
         bookingRepository.save(booking);
     }
+
 }

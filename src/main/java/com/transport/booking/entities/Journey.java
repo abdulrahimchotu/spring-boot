@@ -10,27 +10,31 @@ import java.time.LocalDate;
 public class Journey {
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(nullable = false)
     private String source;
-    
+
     @Column(nullable = false)
     private String destination;
-    
+
     @Column(nullable = false)
     private LocalDate date;
-    
+
     @Column(nullable = false)
     private Integer price;
-    
+
     @Column(nullable = false)
     private Integer availableSeats;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Type type;
-    
+
     public enum Type {
         BUS, TRAIN, AIRPLANE
     }

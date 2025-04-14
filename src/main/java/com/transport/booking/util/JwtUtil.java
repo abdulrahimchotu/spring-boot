@@ -18,17 +18,13 @@ public class JwtUtil {
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration:3600000}") long expirationTime) {
-        // Ensure the secret is at least 256 bits (32 bytes) when Base64 encoded
         byte[] keyBytes;
         try {
-            // If the secret is already Base64 encoded
             keyBytes = Base64.getDecoder().decode(secret);
         } catch (IllegalArgumentException e) {
-            // If not Base64 encoded, encode it first
             keyBytes = Base64.getEncoder().encode(secret.getBytes());
         }
         
-        // Ensure the key is at least 256 bits
         if (keyBytes.length < 32) {
             byte[] newKeyBytes = new byte[32];
             System.arraycopy(keyBytes, 0, newKeyBytes, 0, Math.min(keyBytes.length, 32));

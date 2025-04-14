@@ -7,21 +7,21 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final List<String> PUBLIC_PATHS = Arrays.asList("/auth/login", "/auth/register", "/swagger-ui/**", "/v3/api-docs/**");
+    private final List<String> PUBLIC_PATHS = Arrays.asList("/auth/login", "/auth/register","/ap/");
 
     public JwtRequestFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -32,7 +32,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         
         try {
-            // Skip authentication for public paths
             if (isPublicPath(request.getServletPath())) {
                 chain.doFilter(request, response);
                 return;
@@ -40,7 +39,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             String authHeader = request.getHeader("Authorization");
             
-            // Check if Authorization header is missing or invalid
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 throw new AuthenticationException("Missing or invalid Authorization header");
             }
@@ -53,28 +51,31 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             Claims claims = jwtUtil.extractAllClaims(token);
             String username = claims.getSubject();
-            Boolean isAdmin = claims.get("isAdmin", Boolean.class);
+            String role = claims.get("ROLE", String.class);
+            Integer userId = claims.get("Userid", Integer.class);
 
-            // Create authorities list based on user roles
-            List<SimpleGrantedAuthority> authorities = Arrays.asList(
-                new SimpleGrantedAuthority("ROLE_USER"),
-                isAdmin ? new SimpleGrantedAuthority("ROLE_ADMIN") : null
-            ).stream()
-                .filter(auth -> auth != null)
-                .collect(Collectors.toList());
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-            // Create authentication token with proper authorities
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            if ("ADMIN".equalsIgnoreCase(role)) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            }
+            if ("USER".equalsIgnoreCase(role)) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+            }
+            if ("DRIVER".equalsIgnoreCase(role)) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_DRIVER"));
+            }
+
+
+            UsernamePasswordAuthenticationToken authenticationToken =
+            new UsernamePasswordAuthenticationToken(
                 username,
                 null,
                 authorities
             );
-
-            // Add request details to authentication token
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            // Set authentication in context
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            authenticationToken.setDetails(userId);
+            
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             
             chain.doFilter(request, response);
 
@@ -93,10 +94,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        // Optionally add paths that should never be filtered
-        return request.getServletPath().equals("/health") || 
-               request.getServletPath().equals("/metrics");
-    }
+
 }

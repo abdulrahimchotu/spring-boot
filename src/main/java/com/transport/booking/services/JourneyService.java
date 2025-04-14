@@ -1,56 +1,70 @@
 package com.transport.booking.services;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.transport.booking.repositories.JourneyRepository;
+import com.transport.booking.repositories.UserRepository;
+import com.transport.booking.dto.JourneyDto;
+import com.transport.booking.dto.JourneyResponseDto;
 import com.transport.booking.entities.Journey;
+import com.transport.booking.entities.User;
 import com.transport.booking.exceptions.BadRequestException;
 import com.transport.booking.exceptions.ResourceNotFoundException;
 import java.util.List;
-import java.time.LocalDate;
+
 
 @Service
 public class JourneyService {
     private final JourneyRepository journeyRepository;
+    private final UserRepository userRepository;
 
-    public JourneyService(JourneyRepository journeyRepository) {
+    public JourneyService(JourneyRepository journeyRepository, UserRepository userRepository) {
         this.journeyRepository = journeyRepository;
+        this.userRepository = userRepository;
     }
 
-    public List<Journey> getJourneys() {
+    public List<JourneyResponseDto> getJourneys() {
         List<Journey> journeys = journeyRepository.findAll();
         if (journeys.isEmpty()) {
             throw new ResourceNotFoundException("No journeys found");
         }
-        return journeys;
+        return journeys.stream()
+            .map(j -> new JourneyResponseDto(
+                j.getId(),
+                j.getUser().getUsername(),
+                j.getSource(),
+                j.getDestination(),
+                j.getDate(),
+                j.getPrice(),
+                j.getAvailableSeats(),
+                j.getType()
+            ))
+            .toList();
     }
 
-    public Journey addJourney(Journey journey) {
-        if (journey.getSource() == null || journey.getSource().trim().isEmpty()) {
-            throw new BadRequestException("Source location cannot be empty");
-        }
-        if (journey.getDestination() == null || journey.getDestination().trim().isEmpty()) {
-            throw new BadRequestException("Destination location cannot be empty");
-        }
-        if (journey.getDate() == null) {
-            throw new BadRequestException("Date cannot be empty");
-        }
-        if (journey.getDate().isBefore(LocalDate.now())) {
-            throw new BadRequestException("Journey date cannot be in the past");
-        }
-        if (journey.getAvailableSeats() == null || journey.getAvailableSeats() <= 0) {
-            throw new BadRequestException("Available seats must be greater than 0");
-        }
-        if (journey.getPrice() == null || journey.getPrice() <= 0) {
-            throw new BadRequestException("Price must be greater than 0");
-        }
-        if (journey.getType() == null) {
-            throw new BadRequestException("Journey type cannot be empty");
-        }
+    public Journey addJourney(JourneyDto journeyDto) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = (Integer) authentication.getDetails();
+    
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    
+        Journey journey = new Journey();
+        journey.setSource(journeyDto.getSource());
+        journey.setDestination(journeyDto.getDestination());
+        journey.setDate(journeyDto.getDate());
+        journey.setPrice(journeyDto.getPrice());
+        journey.setAvailableSeats(journeyDto.getAvailableSeats());
+        journey.setType(Journey.Type.valueOf(journeyDto.getType().toUpperCase()));
+        journey.setUser(user);
+    
         return journeyRepository.save(journey);
     }
+    
 
-    public List<Journey> getJourneyByType(Journey.Type type) {
+    public List<JourneyResponseDto> getJourneyByType(Journey.Type type) {
         if (type == null) {
             throw new BadRequestException("Journey type cannot be null");
         }
@@ -59,7 +73,18 @@ public class JourneyService {
         if (journeys.isEmpty()) {
             throw new ResourceNotFoundException("No journeys found for type: " + type);
         }
-        return journeys;
+        return journeys.stream()
+            .map(j -> new JourneyResponseDto(
+                j.getId(),
+                j.getUser().getUsername(),
+                j.getSource(),
+                j.getDestination(),
+                j.getDate(),
+                j.getPrice(),
+                j.getAvailableSeats(),
+                j.getType()
+            ))
+            .toList();
     }
 
     public Journey getJourneyById(Integer journeyId) {

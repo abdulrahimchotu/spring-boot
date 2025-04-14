@@ -1,6 +1,7 @@
 package com.transport.booking.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -18,4 +19,8 @@ public class UserDto {
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
+
+    @Pattern(regexp = "USER|DRIVER", message = "Role must be USER, or DRIVER")
+    @NotBlank(message="Role is required")
+    private String role;
 }

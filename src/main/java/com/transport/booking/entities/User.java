@@ -20,6 +20,11 @@ public class User {
     @Column(nullable = false)
     private String email;
     
+    public static enum UserRole {
+        USER, ADMIN, DRIVER
+    }
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Boolean isAdmin;
+    private UserRole role;
+    
 }
