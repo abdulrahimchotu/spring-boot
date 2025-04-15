@@ -62,9 +62,6 @@ public class BookingService {
 
 
     public void bookJourney(BookingDto bookingDto) {
-        if (bookingDto.getSeatCount() <= 0) {
-            throw new BadRequestException("Seat count must be greater than 0");
-        }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer userId = (Integer) authentication.getDetails();

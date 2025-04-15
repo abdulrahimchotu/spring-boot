@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class Journey {
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -25,7 +25,7 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    public void register(UserDto userDto) {
+    public User register(UserDto userDto) {
         if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
             throw new BadRequestException("Username already exists");
         }
@@ -36,7 +36,7 @@ public class UserService {
         user.setEmail(userDto.getEmail());
         user.setRole(User.UserRole.valueOf(userDto.getRole().toUpperCase()));
         
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     public LoginResponseDto login(UserLoginDto userDto) {

@@ -42,7 +42,7 @@ public class JourneyService {
             ))
             .toList();
     }
-
+ 
     public Journey addJourney(JourneyDto journeyDto) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

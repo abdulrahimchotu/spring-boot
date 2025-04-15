@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class JourneyResponseDto {
-    private Long id;
+    private Integer id;
     private String driverUsername;  
     private String source;
     private String destination;
